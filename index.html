@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1b1b1d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Буфер обмена">
+<title>Буфер обмена</title>
+<link id="faviconLink" rel="icon" type="image/png">
+<link id="appleTouchIconLink" rel="apple-touch-icon">
+<style>
+  :root {
+    --bg-main: #1b1b1d;
+    --bg-card: #2c2c2e;
+    --bg-card-active: #3a3a3c;
+    --accent-blue: #6e9bf7;
+    --accent-pin: #4a90e2;
+    --text-main: #e5e5e7;
+    --text-muted: #8e8e93;
+    --modal-bg: #262629;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    user-select: none;
+  }
+
+  /* Верхняя панель */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background-color: var(--bg-main);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    min-height: 64px;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .back-btn {
+    background: none;
+    border: none;
+    color: var(--text-main);
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+  }
+
+  .header-title {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .circle-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background-color: var(--accent-blue);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    flex-shrink: 0;
+    transition: transform 0.1s, opacity 0.2s;
+  }
+
+  .circle-btn:active {
+    transform: scale(0.92);
+  }
+
+  .circle-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Режим удаления в шапке */
+  .select-all-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--text-main);
+    padding-right: 12px;
+    border-right: 1px solid #444;
+  }
+
+  .radio-circle {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s;
+  }
+
+  .radio-circle.checked {
+    background-color: var(--accent-blue);
+  }
+
+  .radio-circle.checked::after {
+    content: "";
+    width: 6px;
+    height: 11px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+  }
+
+  /* Поиск */
+  .search-bar-wrap {
+    flex: 1;
+    margin: 0 12px;
+  }
+
+  .search-input {
+    width: 100%;
+    background-color: #252528;
+    border: 1.5px solid #3d3d42;
+    border-radius: 24px;
+    padding: 8px 16px;
+    color: var(--text-main);
+    font-size: 16px;
+    outline: none;
+  }
+
+  .search-input:focus {
+    border-color: var(--accent-blue);
+  }
+
+  /* Быстрая панель статуса авточтения */
+  .sync-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 16px;
+    background-color: #232326;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-bottom: 1px solid #2c2c2e;
+  }
+
+  .sync-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .mini-btn {
+    background-color: #323236;
+    color: var(--accent-blue);
+    border: 1px solid #45454a;
+    border-radius: 12px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  /* Контент */
+  .content {
+    padding: 12px 16px 40px;
+    flex: 1;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 14px 0 12px;
+  }
+
+  .section-title {
+    font-size: 19px;
+    font-weight: 600;
+  }
+
+  .pin-all-btn {
+    background: transparent;
+    border: 1.2px solid var(--accent-pin);
+    color: var(--text-main);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+
+  .pin-all-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: var(--accent-pin);
+  }
+
+  /* Горизонтальный список Текущие */
+  .current-list {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 10px 4px 14px 2px;
+    scrollbar-width: none;
+  }
+
+  .current-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .current-list .card {
+    min-width: 165px;
+    max-width: 210px;
+    height: 96px;
+    flex-shrink: 0;
+  }
+
+  /* Сетка Закрепленные */
+  .pinned-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding-top: 6px;
+  }
+
+  .pinned-grid .card {
+    height: 112px;
+  }
+
+  /* Карточка */
+  .card {
+    background-color: var(--bg-card);
+    border-radius: 14px;
+    padding: 12px 14px;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    transition: background-color 0.15s, transform 0.1s;
+    overflow: visible;
+  }
+
+  .card:active {
+    background-color: var(--bg-card-active);
+  }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-blue);
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-text {
+    font-size: 15px;
+    line-height: 1.32;
+    color: var(--text-main);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+  }
+
+  .pinned-grid .card-text {
+    -webkit-line-clamp: 4;
+  }
+
+  .card-title + .card-text {
+    -webkit-line-clamp: 2;
+  }
+
+  .pinned-grid .card-title + .card-text {
+    -webkit-line-clamp: 3;
+  }
+
+  /* Иконка булавки на углу карточки */
+  .pin-badge {
+    position: absolute;
+    top: -7px;
+    right: -5px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 5;
+  }
+
+  .pin-badge svg {
+    width: 21px;
+    height: 21px;
+    stroke: var(--accent-pin);
+    fill: none;
+    stroke-width: 2;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));
+  }
+
+  .pin-badge.pinned svg {
+    fill: var(--accent-pin);
+  }
+
+  /* Кнопка редактирования/переименования на карточке */
+  .edit-badge {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    z-index: 5;
+  }
+
+  .edit-badge svg {
+    width: 13px;
+    height: 13px;
+    stroke: #ccc;
+  }
+
+  /* Чекбокс выбора при удалении */
+  .card-checkbox {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 6;
+    background-color: rgba(27, 27, 29, 0.65);
+    border-radius: 50%;
+  }
+
+  .empty-hint {
+    color: var(--text-muted);
+    font-size: 14px;
+    padding: 12px 2px;
+  }
+
+  /* Модальные окна */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal-box {
+    background-color: var(--modal-bg);
+    border-radius: 22px;
+    padding: 24px 22px 18px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    text-align: center;
+  }
+
+  .modal-title {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #fff;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding-top: 6px;
+  }
+
+  .modal-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 20px;
+  }
+
+  .modal-btn.cancel {
+    color: var(--text-muted);
+  }
+
+  .modal-btn.confirm {
+    color: var(--accent-blue);
+  }
+
+  /* Поля ввода в модалке редактирования */
+  .form-group {
+    text-align: left;
+    margin-bottom: 14px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+  }
+
+  .form-input, .form-textarea {
+    width: 100%;
+    background-color: #1c1c1e;
+    border: 1px solid #3a3a3c;
+    border-radius: 12px;
+    padding: 10px 12px;
+    color: #fff;
+    font-size: 15px;
+    outline: none;
+  }
+
+  .form-textarea {
+    min-height: 95px;
+    resize: vertical;
+  }
+
+  .form-input:focus, .form-textarea:focus {
+    border-color: var(--accent-blue);
+  }
+
+  /* Меню настроек / Импорт-Экспорт / PWA */
+  .settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .settings-item {
+    background-color: #323236;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 13px 16px;
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .settings-item.pwa-install {
+    background-color: rgba(110, 155, 247, 0.2);
+    border: 1px solid var(--accent-blue);
+    color: var(--accent-blue);
+  }
+
+  .settings-item:active {
+    background-color: #404045;
+  }
+
+  .icon-preview-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 10px;
+    background: #1c1c1e;
+    border-radius: 14px;
+  }
+
+  .icon-preview-wrap img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+  }
+
+  .icon-preview-text {
+    text-align: left;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.3;
+  }
+
+  .icon-preview-text strong {
+    color: #fff;
+    display: block;
+    font-size: 14px;
+  }
+
+  /* Уведомление снизу (Тост) */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background-color: #3a3a3e;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+    z-index: 200;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+  <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
+  <header class="header">
+    <div class="header-left">
+      <button class="back-btn" id="headerBackBtn" title="Назад" style="display:none;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <span class="header-title" id="headerTitle">Буфер обмена</span>
+    </div>
+
+    <!-- Поле поиска -->
+    <div class="search-bar-wrap" id="searchBarWrap" style="display:none;">
+      <input type="text" class="search-input" id="searchInput" placeholder="Поиск в буфере...">
+    </div>
+
+    <!-- Обычные кнопки справа -->
+    <div class="header-right" id="normalActions">
+      <button class="circle-btn" id="enterDeleteModeBtn" title="Удаление">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          <line x1="10" y1="11" x2="10" y2="17"></line>
+          <line x1="14" y1="11" x2="14" y2="17"></line>
+        </svg>
+      </button>
+
+      <button class="circle-btn" id="toggleSearchBtn" title="Поиск">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+
+      <button class="circle-btn" id="openSettingsBtn" title="Импорт, экспорт и установка PWA">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+          <line x1="8" y1="10" x2="16" y2="10"></line>
+          <line x1="8" y1="14" x2="14" y2="14"></line>
+          <line x1="8" y1="18" x2="12" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Кнопки режима удаления -->
+    <div class="header-right" id="deleteActions" style="display:none;">
+      <div class="select-all-wrap" id="selectAllToggle">
+        <div class="radio-circle" id="selectAllCircle"></div>
+        <span>Все</span>
+      </div>
+      <button class="circle-btn" id="confirmDeleteTriggerBtn" title="Удалить выбранные">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- СТРОКА АВТОСИНХРОНИЗАЦИИ И БЫСТРОЙ ВСТАВКИ -->
+  <div class="sync-bar">
+    <span id="syncStatusText">Автозахват буфера активен</span>
+    <div class="sync-actions">
+      <button class="mini-btn" id="manualPasteBtn">+ Вставить</button>
+      <button class="mini-btn" id="newCustomBtn">+ Создать</button>
+    </div>
+  </div>
+
+  <!-- ОСНОВНОЙ КОНТЕНТ -->
+  <main class="content">
+    <div class="section-header">
+      <h2 class="section-title">Текущие</h2>
+      <button class="pin-all-btn" id="pinAllBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 17v5"></path>
+          <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"></path>
+        </svg>
+        Закрепить все
+      </button>
+    </div>
+    <div class="current-list" id="currentList"></div>
+
+    <div class="section-header" style="margin-top: 18px;">
+      <h2 class="section-title">Закрепленные</h2>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#4a90e2" stroke="#4a90e2" stroke-width="2" style="transform: rotate(45deg);">
+        <path d="M12 17v5"></path>
+        <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"></path>
+      </svg>
+    </div>
+    <div class="pinned-grid" id="pinnedGrid"></div>
+  </main>
+
+  <!-- МОДАЛЬНОЕ ОКНО: ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal-box">
+      <div class="modal-title">Подтвердите удаление?</div>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" id="cancelDeleteModalBtn">Отмена</button>
+        <button class="modal-btn confirm" id="confirmDeleteModalBtn">Удалить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО: РЕДАКТИРОВАНИЕ / ПЕРЕИМЕНОВАНИЕ -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-box">
+      <div class="modal-title" id="editModalTitle">Редактировать запись</div>
+      <div class="form-group">
+        <label class="form-label">Название / Заголовок (необязательно)</label>
+        <input type="text" class="form-input" id="editTitleInput" placeholder="Например: Команда запуска">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Содержимое текста</label>
+        <textarea class="form-textarea" id="editTextInput" placeholder="Введите или вставьте текст..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" id="cancelEditBtn">Отмена</button>
+        <button class="modal-btn confirm" id="saveEditBtn">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО: ЭКСПОРТ / ИМПОРТ И УСТАНОВКА PWA -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-box">
+      <div class="modal-title">Управление буфером</div>
+
+      <div class="icon-preview-wrap">
+        <img id="modalAppIcon" alt="App Icon">
+        <div class="icon-preview-text">
+          <strong>Буфер обмена PWA</strong>
+          Автономное приложение с поддержкой офлайн-режима
+        </div>
+      </div>
+
+      <div class="settings-list">
+        <button class="settings-item pwa-install" id="installPwaBtn" style="display:none;">
+          <span>Установить на главный экран</span>
+          <span>📲</span>
+        </button>
+        <button class="settings-item" id="exportBtn">
+          <span>Экспорт в файл (.json)</span>
+          <span>⬇️</span>
+        </button>
+        <button class="settings-item" id="importTriggerBtn">
+          <span>Импорт из файла (.json)</span>
+          <span>⬆️</span>
+        </button>
+        <input type="file" id="importFileInput" accept=".json,application/json" style="display:none;">
+        <button class="settings-item" id="clearCurrentBtn">
+          <span>Очистить только «Текущие»</span>
+          <span>🧹</span>
+        </button>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" id="closeSettingsBtn">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ВСПЛЫВАЮЩЕЕ УВЕДОМЛЕНИЕ -->
+  <div class="toast" id="toast">Скопировано в буфер обмена</div>
+
+<script>
+  // =========================================================================
+  // 1. ГЕНЕРАЦИЯ ФИРМЕННОЙ ИКОНКИ (ТОЧНАЯ КОПИЯ С ПЕРВОГО СКРИНШОТА) И PWA
+  // =========================================================================
+  function generateClipboardIconDataURL(size = 512) {
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+
+    function roundRect(x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Синий круглый фон (#6e9bf7)
+    ctx.fillStyle = '#6e9bf7';
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Белая основа планшета
+    ctx.fillStyle = '#ffffff';
+    roundRect(size * 0.28, size * 0.23, size * 0.44, size * 0.55, size * 0.055);
+
+    // Синий вырез под верхний зажим
+    ctx.fillStyle = '#6e9bf7';
+    roundRect(size * 0.37, size * 0.20, size * 0.26, size * 0.09, size * 0.03);
+
+    // Белый верхний зажим
+    ctx.fillStyle = '#ffffff';
+    roundRect(size * 0.39, size * 0.175, size * 0.22, size * 0.09, size * 0.035);
+
+    // Синяя прорезь внутри зажима
+    ctx.fillStyle = '#6e9bf7';
+    roundRect(size * 0.43, size * 0.208, size * 0.14, size * 0.024, size * 0.012);
+
+    // Три синие горизонтальные строки текста (разной длины как на оригинале)
+    roundRect(size * 0.35, size * 0.38, size * 0.26, size * 0.036, size * 0.018);
+    roundRect(size * 0.35, size * 0.48, size * 0.16, size * 0.036, size * 0.018);
+    roundRect(size * 0.35, size * 0.58, size * 0.21, size * 0.036, size * 0.018);
+
+    return canvas.toDataURL('image/png');
+  }
+
+  let deferredInstallPrompt = null;
+
+  function initPWA() {
+    const icon512 = generateClipboardIconDataURL(512);
+    const icon192 = generateClipboardIconDataURL(192);
+
+    document.getElementById('faviconLink').href = icon192;
+    document.getElementById('appleTouchIconLink').href = icon192;
+    document.getElementById('modalAppIcon').src = icon192;
+
+    // Динамический Web App Manifest
+    const manifestObj = {
+      name: 'Буфер обмена',
+      short_name: 'Буфер',
+      description: 'Менеджер буфера обмена с закреплением и экспортом',
+      start_url: window.location.href.split('#')[0],
+      display: 'standalone',
+      background_color: '#1b1b1d',
+      theme_color: '#1b1b1d',
+      orientation: 'portrait',
+      icons: [
+        { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+        { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+      ]
+    };
+
+    const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
+    const manifestURL = URL.createObjectURL(manifestBlob);
+    const linkEl = document.createElement('link');
+    linkEl.rel = 'manifest';
+    linkEl.href = manifestURL;
+    document.head.appendChild(linkEl);
+
+    // Регистрация Service Worker для офлайн-работы
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+      const swCode = `
+        const CACHE_NAME = 'clipboard-pwa-v1';
+        self.addEventListener('install', (e) => {
+          self.skipWaiting();
+        });
+        self.addEventListener('activate', (e) => {
+          e.waitUntil(self.clients.claim());
+        });
+        self.addEventListener('fetch', (e) => {
+          e.respondWith(
+            fetch(e.request).catch(() => caches.match(e.request))
+          );
+        });
+      `;
+      const swBlob = new Blob([swCode], { type: 'application/javascript' });
+      const swUrl = URL.createObjectURL(swBlob);
+      navigator.serviceWorker.register(swUrl).catch(() => {});
+    }
+
+    // Перехват системного события установки PWA
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      const installBtn = document.getElementById('installPwaBtn');
+      installBtn.style.display = 'flex';
+    });
+
+    document.getElementById('installPwaBtn').addEventListener('click', async () => {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      if (outcome === 'accepted') {
+        document.getElementById('installPwaBtn').style.display = 'none';
+        showToast('Приложение устанавливается!');
+      }
+      deferredInstallPrompt = null;
+    });
+  }
+
+  // =========================================================================
+  // 2. ОСНОВНАЯ ЛОГИКА БУФЕРА ОБМЕНА
+  // =========================================================================
+  const STORAGE_KEY = 'custom_android_clipboard_v1';
+
+  const defaultItems = [
+    { id: '1', title: '', text: 'Привет как дела', pinned: false, time: Date.now() - 30000 },
+    { id: '2', title: '', text: 'sudo python OneShot/oneshot.py -i wlan0 -K', pinned: false, time: Date.now() - 20000 },
+    { id: '3', title: '', text: 'С этого момента ты работаешь исключительно как корректор.', pinned: true, time: Date.now() - 90000 },
+    { id: '4', title: '', text: 'Слушай я тебя просил писать подробно Хорошо тогда такой случай', pinned: true, time: Date.now() - 80000 },
+    { id: '5', title: '', text: 'ENFIGRAUND_FOTI_NET3424512', pinned: true, time: Date.now() - 70000 },
+    { id: '6', title: '', text: 'vnjrTDH9', pinned: true, time: Date.now() - 60000 }
+  ];
+
+  let items = [];
+  let isDeleteMode = false;
+  let isSearchMode = false;
+  let selectedIds = new Set();
+  let editingId = null;
+  let lastCapturedText = '';
+
+  function loadItems() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        items = JSON.parse(raw);
+      } else {
+        items = defaultItems;
+        saveItems();
+      }
+    } catch (e) {
+      items = defaultItems;
+    }
+  }
+
+  function saveItems() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window.toastTimer);
+    window.toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  function getPinSvg() {
+    return `<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 17v5"></path>
+      <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"></path>
+    </svg>`;
+  }
+
+  function render() {
+    const query = document.getElementById('searchInput').value.trim().toLowerCase();
+    const currentList = document.getElementById('currentList');
+    const pinnedGrid = document.getElementById('pinnedGrid');
+    const pinAllBtn = document.getElementById('pinAllBtn');
+
+    currentList.innerHTML = '';
+    pinnedGrid.innerHTML = '';
+
+    const filtered = items.filter(item => {
+      if (!query) return true;
+      return (item.text && item.text.toLowerCase().includes(query)) ||
+             (item.title && item.title.toLowerCase().includes(query));
+    });
+
+    const currentItems = filtered.filter(i => !i.pinned).sort((a, b) => b.time - a.time);
+    const pinnedItems = filtered.filter(i => i.pinned).sort((a, b) => b.time - a.time);
+
+    pinAllBtn.style.display = (isDeleteMode || currentItems.length === 0) ? 'none' : 'flex';
+
+    if (currentItems.length === 0) {
+      currentList.innerHTML = '<div class="empty-hint">Нет текущих записей</div>';
+    } else {
+      currentItems.forEach(item => currentList.appendChild(createCard(item)));
+    }
+
+    if (pinnedItems.length === 0) {
+      pinnedGrid.innerHTML = '<div class="empty-hint">Нет закрепленных записей</div>';
+    } else {
+      pinnedItems.forEach(item => pinnedGrid.appendChild(createCard(item)));
+    }
+
+    updateSelectAllCircle();
+  }
+
+  function createCard(item) {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    if (item.title) {
+      const titleEl = document.createElement('div');
+      titleEl.className = 'card-title';
+      titleEl.textContent = item.title;
+      card.appendChild(titleEl);
+    }
+
+    const textEl = document.createElement('div');
+    textEl.className = 'card-text';
+    textEl.textContent = item.text;
+    card.appendChild(textEl);
+
+    if (isDeleteMode) {
+      const cb = document.createElement('div');
+      cb.className = 'radio-circle card-checkbox' + (selectedIds.has(item.id) ? ' checked' : '');
+      card.appendChild(cb);
+    } else {
+      const pinBtn = document.createElement('div');
+      pinBtn.className = 'pin-badge' + (item.pinned ? ' pinned' : '');
+      pinBtn.innerHTML = getPinSvg();
+      pinBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        item.pinned = !item.pinned;
+        item.time = Date.now();
+        saveItems();
+        render();
+        showToast(item.pinned ? 'Закреплено' : 'Откреплено');
+      });
+      card.appendChild(pinBtn);
+
+      const editBtn = document.createElement('div');
+      editBtn.className = 'edit-badge';
+      editBtn.title = 'Переименовать / Изменить';
+      editBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`;
+      editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openEditModal(item);
+      });
+      card.appendChild(editBtn);
+    }
+
+    let pressTimer;
+    card.addEventListener('touchstart', () => {
+      if (isDeleteMode) return;
+      pressTimer = setTimeout(() => openEditModal(item), 600);
+    }, { passive: true });
+    card.addEventListener('touchend', () => clearTimeout(pressTimer));
+    card.addEventListener('touchmove', () => clearTimeout(pressTimer));
+
+    card.addEventListener('click', () => {
+      if (isDeleteMode) {
+        if (selectedIds.has(item.id)) {
+          selectedIds.delete(item.id);
+        } else {
+          selectedIds.add(item.id);
+        }
+        render();
+      } else {
+        copyToSystemClipboard(item.text);
+      }
+    });
+
+    return card;
+  }
+
+  async function copyToSystemClipboard(text) {
+    lastCapturedText = text;
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('Скопировано в буфер');
+    } catch (err) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('Скопировано в буфер');
+    }
+  }
+
+  function addCopiedText(rawText, notify = true) {
+    if (!rawText) return false;
+    const text = rawText.trim();
+    if (!text) return false;
+
+    const existing = items.find(i => i.text === text);
+    if (existing) {
+      existing.time = Date.now();
+      saveItems();
+      render();
+      return false;
+    }
+
+    items.unshift({
+      id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+      title: '',
+      text: text,
+      pinned: false,
+      time: Date.now()
+    });
+    saveItems();
+    render();
+    if (notify) showToast('Автосохранено из буфера');
+    return true;
+  }
+
+  async function tryAutoReadClipboard(showError = false) {
+    if (!navigator.clipboard || !navigator.clipboard.readText) {
+      if (showError) showToast('Открой через localhost/HTTPS для авточтения');
+      return;
+    }
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text && text.trim() && text !== lastCapturedText) {
+        lastCapturedText = text;
+        addCopiedText(text, true);
+      } else if (showError) {
+        showToast('В буфере нет нового текста');
+      }
+      document.getElementById('syncStatusText').textContent = 'Автозахват активен ✓';
+    } catch (err) {
+      document.getElementById('syncStatusText').textContent = 'Нажми «+ Вставить» для захвата';
+      if (showError) {
+        const manual = prompt('Вставь скопированный текст сюда:');
+        if (manual) addCopiedText(manual, true);
+      }
+    }
+  }
+
+  window.addEventListener('focus', () => tryAutoReadClipboard(false));
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      tryAutoReadClipboard(false);
+    }
+  });
+  document.addEventListener('paste', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const pasted = (e.clipboardData || window.clipboardData).getData('text');
+    if (pasted) addCopiedText(pasted, true);
+  });
+
+  document.getElementById('manualPasteBtn').addEventListener('click', () => {
+    tryAutoReadClipboard(true);
+  });
+
+  document.getElementById('pinAllBtn').addEventListener('click', () => {
+    let count = 0;
+    items.forEach(i => {
+      if (!i.pinned) {
+        i.pinned = true;
+        count++;
+      }
+    });
+    if (count > 0) {
+      saveItems();
+      render();
+      showToast(`Закреплено: ${count}`);
+    }
+  });
+
+  const headerBackBtn = document.getElementById('headerBackBtn');
+  const headerTitle = document.getElementById('headerTitle');
+  const normalActions = document.getElementById('normalActions');
+  const deleteActions = document.getElementById('deleteActions');
+  const searchBarWrap = document.getElementById('searchBarWrap');
+  const searchInput = document.getElementById('searchInput');
+
+  function setMode(mode) {
+    isDeleteMode = (mode === 'delete');
+    isSearchMode = (mode === 'search');
+    selectedIds.clear();
+
+    if (isDeleteMode) {
+      headerBackBtn.style.display = 'flex';
+      headerTitle.style.display = 'inline';
+      searchBarWrap.style.display = 'none';
+      normalActions.style.display = 'none';
+      deleteActions.style.display = 'flex';
+    } else if (isSearchMode) {
+      headerBackBtn.style.display = 'flex';
+      headerTitle.style.display = 'none';
+      searchBarWrap.style.display = 'block';
+      normalActions.style.display = 'none';
+      deleteActions.style.display = 'none';
+      searchInput.focus();
+    } else {
+      headerBackBtn.style.display = 'none';
+      headerTitle.style.display = 'inline';
+      searchBarWrap.style.display = 'none';
+      normalActions.style.display = 'flex';
+      deleteActions.style.display = 'none';
+      searchInput.value = '';
+    }
+    render();
+  }
+
+  document.getElementById('enterDeleteModeBtn').addEventListener('click', () => setMode('delete'));
+  document.getElementById('toggleSearchBtn').addEventListener('click', () => setMode('search'));
+  headerBackBtn.addEventListener('click', () => setMode('normal'));
+  searchInput.addEventListener('input', () => render());
+
+  document.getElementById('selectAllToggle').addEventListener('click', () => {
+    if (selectedIds.size === items.length && items.length > 0) {
+      selectedIds.clear();
+    } else {
+      items.forEach(i => selectedIds.add(i.id));
+    }
+    render();
+  });
+
+  function updateSelectAllCircle() {
+    const circle = document.getElementById('selectAllCircle');
+    if (items.length > 0 && selectedIds.size === items.length) {
+      circle.classList.add('checked');
+    } else {
+      circle.classList.remove('checked');
+    }
+  }
+
+  const deleteModal = document.getElementById('deleteModal');
+  document.getElementById('confirmDeleteTriggerBtn').addEventListener('click', () => {
+    if (selectedIds.size === 0) {
+      showToast('Ничего не выбрано');
+      return;
+    }
+    deleteModal.classList.add('active');
+  });
+
+  document.getElementById('cancelDeleteModalBtn').addEventListener('click', () => {
+    deleteModal.classList.remove('active');
+  });
+
+  document.getElementById('confirmDeleteModalBtn').addEventListener('click', () => {
+    items = items.filter(i => !selectedIds.has(i.id));
+    saveItems();
+    deleteModal.classList.remove('active');
+    setMode('normal');
+    showToast('Удалено');
+  });
+
+  const editModal = document.getElementById('editModal');
+  const editTitleInput = document.getElementById('editTitleInput');
+  const editTextInput = document.getElementById('editTextInput');
+
+  function openEditModal(item = null) {
+    if (item) {
+      editingId = item.id;
+      document.getElementById('editModalTitle').textContent = 'Переименовать / Изменить';
+      editTitleInput.value = item.title || '';
+      editTextInput.value = item.text || '';
+    } else {
+      editingId = null;
+      document.getElementById('editModalTitle').textContent = 'Новая запись';
+      editTitleInput.value = '';
+      editTextInput.value = '';
+    }
+    editModal.classList.add('active');
+  }
+
+  document.getElementById('newCustomBtn').addEventListener('click', () => openEditModal(null));
+  document.getElementById('cancelEditBtn').addEventListener('click', () => editModal.classList.remove('active'));
+
+  document.getElementById('saveEditBtn').addEventListener('click', () => {
+    const titleVal = editTitleInput.value.trim();
+    const textVal = editTextInput.value.trim();
+    if (!textVal) {
+      showToast('Текст не может быть пустым');
+      return;
+    }
+    if (editingId) {
+      const target = items.find(i => i.id === editingId);
+      if (target) {
+        target.title = titleVal;
+        target.text = textVal;
+      }
+      showToast('Сохранено');
+    } else {
+      items.unshift({
+        id: Date.now().toString(),
+        title: titleVal,
+        text: textVal,
+        pinned: false,
+        time: Date.now()
+      });
+      showToast('Добавлено');
+    }
+    saveItems();
+    render();
+    editModal.classList.remove('active');
+  });
+
+  const settingsModal = document.getElementById('settingsModal');
+  document.getElementById('openSettingsBtn').addEventListener('click', () => settingsModal.classList.add('active'));
+  document.getElementById('closeSettingsBtn').addEventListener('click', () => settingsModal.classList.remove('active'));
+
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const dataStr = JSON.stringify(items, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `clipboard_backup_${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    settingsModal.classList.remove('active');
+    showToast('Файл экспорта сохранен');
+  });
+
+  const importFileInput = document.getElementById('importFileInput');
+  document.getElementById('importTriggerBtn').addEventListener('click', () => {
+    importFileInput.click();
+  });
+
+  importFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target.result);
+        if (Array.isArray(imported)) {
+          const existingTexts = new Set(items.map(i => i.text));
+          let added = 0;
+          imported.forEach(entry => {
+            if (entry && entry.text && !existingTexts.has(entry.text)) {
+              items.push({
+                id: entry.id || (Date.now().toString() + Math.random()),
+                title: entry.title || '',
+                text: entry.text,
+                pinned: Boolean(entry.pinned),
+                time: entry.time || Date.now()
+              });
+              existingTexts.add(entry.text);
+              added++;
+            }
+          });
+          saveItems();
+          render();
+          settingsModal.classList.remove('active');
+          showToast(`Импортировано записей: ${added}`);
+        } else {
+          showToast('Неверный формат файла');
+        }
+      } catch (err) {
+        showToast('Ошибка чтения JSON файла');
+      }
+      importFileInput.value = '';
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById('clearCurrentBtn').addEventListener('click', () => {
+    items = items.filter(i => i.pinned);
+    saveItems();
+    render();
+    settingsModal.classList.remove('active');
+    showToast('Текущие очищены');
+  });
+
+  // Запуск
+  initPWA();
+  loadItems();
+  render();
+  setTimeout(() => tryAutoReadClipboard(false), 300);
+</script>
+</body>
+  </html>
